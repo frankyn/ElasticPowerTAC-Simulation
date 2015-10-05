@@ -1,0 +1,3 @@
+[submodule "ElasticPowerTAC-Simulation-Config"]
+	path = ElasticPowerTAC-Simulation-Config
+	url = https://github.com/frankyn/ElasticPowerTAC-Simulation-Config.git
