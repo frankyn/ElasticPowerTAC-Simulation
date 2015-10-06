@@ -67,6 +67,7 @@ class ElasticPowerTAC_Simulation:
             cmd_move = ['mv', './%s/VillageType1.properties'%(extracted_directory), './config/']
             subprocess.call(cmd_move)
             cmd_move = ['mv', './%s/bootstrap-data'%(extracted_directory),'./']
+            subprocess.call(cmd_move)
             os.chdir('../')
             x += 1
 
@@ -107,7 +108,7 @@ class ElasticPowerTAC_Simulation:
             subprocess.call(cmd_tar)
 
             # Transmit back to master
-            cmd_scp = ['scp','%s-%s.tar.gz'%(extracted_directory,today.isoformat()),
+            cmd_scp = ['scp','-o StrictHostKeyChecking=no','%s-%s.tar.gz'%(extracted_directory,today.isoformat()),
                        'log@%s:~/'%(self._config['master-ip'])]
             subprocess.call(cmd_scp)
             x += 1
