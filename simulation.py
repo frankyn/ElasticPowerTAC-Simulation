@@ -1,7 +1,7 @@
-from DigitalOceanAPIv2.docean import DOcean
 import subprocess
 import json
 import time
+import os
 from datetime import date
 
 '''
@@ -38,42 +38,58 @@ class ElasticPowerTAC_Simulation:
     # setup slave environment
     def setup_slave_simulations(self):
         print("Slaves have been initialized!")
-
+        x = 1
         # Create a simulation server for each simulation config
         for simulation in self._config['simulations']:
             # Copy server-distribution powertac
-            cmd_copy = ['cp', '-r', 'server-distribution', 'simulation-1']
+            cmd_copy = ['cp', '-r', 'server-distribution', 'simulation-%d'%x]
             subprocess.call(cmd_copy)
 
             # Copy Simulation Config
             cmd_copy = ['cp',
                         'ElasticPowerTAC-Simulation-Config/%s' % (simulation['simulation']),
-                        'simulation-1/']
+                        'simulation-%d/'%x]
             subprocess.call(cmd_copy)
 
             # Untar
-            cmd_extract = ['tar', 'xzf', simulation['simulation']]
+            os.chdir('./simulation-%d'%x)
+            cmd_extract = ['tar', '-xzf', '%s'%(simulation['simulation'])]
             subprocess.call(cmd_extract)
 
-            # Move config
-            cmd_move = ['mv', 'FactoredCustomers.xml', 'simulation-1/config/']
-            subprocess.call(cmd_move)
-            cmd_move = ['mv', 'server.properties', 'simulation-1/config/']
-            subprocess.call(cmd_move)
-            cmd_move = ['mv', 'VillageType1.properties', 'simulation-1/config/']
-            subprocess.call(cmd_move)
+            # extracted directory
+            extracted_directory = simulation['simulation'].replace('.tar.gz','')
 
+            # Move config
+            cmd_move = ['mv', './%s/FactoredCustomers.xml'%(extracted_directory), './config/']
+            subprocess.call(cmd_move)
+            cmd_move = ['mv', './%s/server.properties'%(extracted_directory), './config/']
+            subprocess.call(cmd_move)
+            cmd_move = ['mv', './%s/VillageType1.properties'%(extracted_directory), './config/']
+            subprocess.call(cmd_move)
+            cmd_move = ['mv', './%s/bootstrap-data'%(extracted_directory),'./']
+            os.chdir('../')
+            x += 1
 
     # start simulation scenarios
     def start_slave_simulations(self):
         print("Starting Slave")
         self._process_handles = []
         # Start each simulation and hold process handle until they all finish...
-        x = 0
+        x = 1
+        port = 61616
         for simulation in self._config['simulations']:
-            cmd_start = ['cd %s;mvn -Pcli -Dexec.args="--sim --boot-data bootstrap-data --config config/server.properties --jms-url tcp://localhost:616%d;'%(10+x)]
+            cmd_cp = ['cp','runner.sh','./simulation-%d'%x]
+            subprocess.call(cmd_cp)
+
+            os.chdir('./simulation-%d'%x)
+            cmd_chmod = ['chmod','a+x','runner.sh']
+            subprocess.call(cmd_chmod)
+
+            cmd_start = ['./runner.sh',str(port)]
             self._process_handles.append(subprocess.Popen(cmd_start))
             x += 1
+            port += 1
+            os.chdir('../')
         for process in self._process_handles:
             process.wait()
 
@@ -82,16 +98,19 @@ class ElasticPowerTAC_Simulation:
     # save results in a tar ball with simulation config name
     def save_simulation_results(self):
         today = date.today()
-
+        x = 1
         for simulation in self._config['simulations']:
+            extracted_directory = simulation['simulation'].replace('.tar.gz','')
+
             # Compress log file
-            cmd_tar = ['tar','-czf','%s-%s.tar.gz'%(simulation['simulation'],today.isoformat()),'']
+            cmd_tar = ['tar','-czf','%s-%s.tar.gz'%(simulation['name'],today.isoformat()),'simulation-%d/log'%x]
             subprocess.call(cmd_tar)
 
             # Transmit back to master
-            cmd_scp = ['scp','%s-%s.tar.gz'%(simulation['simulation'],today.isoformat()),
+            cmd_scp = ['scp','%s-%s.tar.gz'%(extracted_directory,today.isoformat()),
                        'log@%s:~/'%(self._config['master-ip'])]
-            
+            subprocess.call(cmd_scp)
+            x += 1
         # That's it.
 
 
@@ -100,7 +119,7 @@ if __name__ == "__main__":
     elastic_powertac_simulation = ElasticPowerTAC_Simulation()
 
     # Setup Simulation Environment
-    elastic_powertac_simulation.setup_simulation_environment()
+    elastic_powertac_simulation.setup_slave_simulations()
 
     # Start Simulations
     elastic_powertac_simulation.start_slave_simulations()
