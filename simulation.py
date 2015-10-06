@@ -101,13 +101,17 @@ class ElasticPowerTAC_Simulation:
         today = date.today()
         x = 1
         for simulation in self._config['simulations']:
-            extracted_directory = simulation['simulation'].replace('.tar.gz','')
+
+            # Copy system log file
+            cmd_cp = ['cp','/tmp/slave-log','simulation-%d/log'%x]
+            subprocess.call(cmd_cp)
 
             # Compress log file
             cmd_tar = ['tar','-czf','%s-%s.tar.gz'%(simulation['name'],today.isoformat()),'simulation-%d/log'%x]
             subprocess.call(cmd_tar)
 
             # Transmit back to master
+            # Add in Google Drive API here...
             cmd_scp = ['scp','-o StrictHostKeyChecking=no','%s-%s.tar.gz'%(simulation['name'],today.isoformat()),
                        'log@%s:~/'%(self._config['master-ip'])]
             subprocess.call(cmd_scp)
