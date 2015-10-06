@@ -1,0 +1,10 @@
+{
+	"master-ip":"xxx.xxx.xxx.xxx",
+	"simulations":[{
+		"name":"simulation-name",
+		"simulation":"config-sim-01",
+	},{
+		"name":"simulation-name",
+		"simulation":"config-sim-02",
+	}]
+}
