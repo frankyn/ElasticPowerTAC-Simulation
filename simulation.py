@@ -108,7 +108,7 @@ class ElasticPowerTAC_Simulation:
             subprocess.call(cmd_tar)
 
             # Transmit back to master
-            cmd_scp = ['scp','-o StrictHostKeyChecking=no','%s-%s.tar.gz'%(extracted_directory,today.isoformat()),
+            cmd_scp = ['scp','-o StrictHostKeyChecking=no','%s-%s.tar.gz'%(simulation['name'],today.isoformat()),
                        'log@%s:~/'%(self._config['master-ip'])]
             subprocess.call(cmd_scp)
             x += 1
