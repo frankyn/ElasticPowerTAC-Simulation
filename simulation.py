@@ -81,12 +81,13 @@ class ElasticPowerTAC_Simulation:
         # Build additional parameters for maven script
         maven_params = ''
         # Process key value pairs
-        for key, value in simulation['maven-params'].iteritems():
-            maven_params += '%s $s '%(key,value)
+        print(simulation['maven-params'])
+        for key,value in simulation['maven-params'].iteritems():
+            maven_params += '%s %s '%(key,value)
 
         # Write runner.sh.
         with open('runner.sh','w+') as f:
-            f.write('#!/bin/sh')
+            f.write('#!/bin/sh\n')
             f.write('mvn -Pcli -Dexec.args="--sim --jms-url tcp://localhost:$1 %s"'%maven_params)
 
 
@@ -99,9 +100,6 @@ class ElasticPowerTAC_Simulation:
         x = 1
         port = 61616
         for simulation in self._config['simulations']:
-            cmd_cp = ['cp','runner.sh','./simulation-%d'%x]
-            subprocess.call(cmd_cp)
-
             # Go to simulation directory
             os.chdir('./simulation-%d'%x)
 
