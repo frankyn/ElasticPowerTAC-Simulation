@@ -21,6 +21,7 @@ class ElasticPowerTAC_Simulation:
         # Load config
         self.load_config()
 
+
     # load_config
     def load_config(self):
         # load from "config.json"
@@ -110,11 +111,10 @@ class ElasticPowerTAC_Simulation:
             cmd_tar = ['tar','-czf','%s-%s.tar.gz'%(simulation['name'],today.isoformat()),'simulation-%d/log'%x]
             subprocess.call(cmd_tar)
 
-            # Transmit back to master
-            # Add in Google Drive API here...
-            cmd_scp = ['scp','-o StrictHostKeyChecking=no','%s-%s.tar.gz'%(simulation['name'],today.isoformat()),
+            if not self._config['google-drive']:
+                cmd_scp = ['scp','-o StrictHostKeyChecking=no','%s-%s.tar.gz'%(simulation['name'],today.isoformat()),
                        'log@%s:~/'%(self._config['master-ip'])]
-            subprocess.call(cmd_scp)
+                subprocess.call(cmd_scp)
             x += 1
         # That's it.
 
