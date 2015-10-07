@@ -52,8 +52,10 @@ class ElasticPowerTAC_Simulation:
                         'simulation-%d/'%x]
             subprocess.call(cmd_copy)
 
-            # Untar
+            # Go to simulation directory
             os.chdir('./simulation-%d'%x)
+
+            # Uncompress simulation configuration payload
             cmd_extract = ['tar', '-xzf', '%s'%(simulation['simulation'])]
             subprocess.call(cmd_extract)
 
@@ -61,16 +63,33 @@ class ElasticPowerTAC_Simulation:
             extracted_directory = simulation['simulation'].replace('.tar.gz','')
 
             # Move config
-            cmd_move = ['mv', './%s/FactoredCustomers.xml'%(extracted_directory), './config/']
-            subprocess.call(cmd_move)
-            cmd_move = ['mv', './%s/server.properties'%(extracted_directory), './config/']
-            subprocess.call(cmd_move)
-            cmd_move = ['mv', './%s/VillageType1.properties'%(extracted_directory), './config/']
-            subprocess.call(cmd_move)
-            cmd_move = ['mv', './%s/bootstrap-data'%(extracted_directory),'./']
-            subprocess.call(cmd_move)
+            # Use simulation file mappings
+            for mapping in simulation['file-mapping']:
+                cmd_move = ['mv',
+                            './%s/%s'%(extracted_directory,mapping['file']),
+                            './%s'%mapping['location']]
+                subprocess.call(cmd_move)
+
+            # Exit simulation directory
             os.chdir('../')
+
             x += 1
+
+    # Generate runner.sh
+    # Create runner.sh with specified configuration params for maven
+    def generate_runner(self,simulation):
+        # Build additional parameters for maven script
+        maven_params = ''
+        # Process key value pairs
+        for key, value in simulation['maven-params'].iteritems():
+            maven_params += '%s $s '%(key,value)
+
+        # Write runner.sh.
+        with open('runner.sh','w+') as f:
+            f.write('#!/bin/sh')
+            f.write('mvn -Pcli -Dexec.args="--sim --jms-url tcp://localhost:$1 %s"'%maven_params)
+
+
 
     # start simulation scenarios
     def start_slave_simulations(self):
@@ -83,15 +102,26 @@ class ElasticPowerTAC_Simulation:
             cmd_cp = ['cp','runner.sh','./simulation-%d'%x]
             subprocess.call(cmd_cp)
 
+            # Go to simulation directory
             os.chdir('./simulation-%d'%x)
+
+            # Generate Runner.sh Script
+            self.generate_runner(simulation)
+
+            # Add execution permissions
             cmd_chmod = ['chmod','a+x','runner.sh']
             subprocess.call(cmd_chmod)
 
+            # Run it.
             cmd_start = ['./runner.sh',str(port)]
             self._process_handles.append(subprocess.Popen(cmd_start))
+
+            # Exit simulation directory
+            os.chdir('../')
+
             x += 1
             port += 1
-            os.chdir('../')
+
         for process in self._process_handles:
             process.wait()
 
