@@ -81,7 +81,6 @@ class ElasticPowerTAC_Simulation:
         # Build additional parameters for maven script
         maven_params = ''
         # Process key value pairs
-        print(simulation['maven-params'])
         for key,value in simulation['maven-params'].iteritems():
             maven_params += '%s %s '%(key,value)
 
