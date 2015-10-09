@@ -48,7 +48,7 @@ class ElasticPowerTAC_Simulation:
 
             # Copy Simulation Config
             cmd_copy = ['cp',
-                        'ElasticPowerTAC-Simulation-Config/%s' % (simulation['simulation']),
+                        'scenarios/%s' % (simulation['simulation-file-name']),
                         'simulation-%d/'%x]
             subprocess.call(cmd_copy)
 
@@ -56,11 +56,11 @@ class ElasticPowerTAC_Simulation:
             os.chdir('./simulation-%d'%x)
 
             # Uncompress simulation configuration payload
-            cmd_extract = ['tar', '-xzf', '%s'%(simulation['simulation'])]
+            cmd_extract = ['tar', '-xzf', '%s'%(simulation['simulation-file-name'])]
             subprocess.call(cmd_extract)
 
             # extracted directory
-            extracted_directory = simulation['simulation'].replace('.tar.gz','')
+            extracted_directory = simulation['simulation-file-name'].replace('.tar.gz','')
 
             # Move config
             # Use simulation file mappings
