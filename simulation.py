@@ -46,6 +46,10 @@ class ElasticPowerTAC_Simulation:
             cmd_copy = ['cp', '-r', 'server-distribution', 'simulation-%d'%x]
             subprocess.call(cmd_copy)
 
+            # Create classes folder
+            cmd_create = ['mkdir','-p','simulation-%d/target/classes'%x]
+            subprocess.call(cmd_create)
+
             # Copy Simulation Config
             cmd_copy = ['cp',
                         'scenarios/%s' % (simulation['simulation-file-name']),
@@ -101,6 +105,8 @@ class ElasticPowerTAC_Simulation:
         for simulation in self._config['simulations']:
             # Go to simulation directory
             os.chdir('./simulation-%d'%x)
+
+
 
             # Generate Runner.sh Script
             self.generate_runner(simulation)
