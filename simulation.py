@@ -5,10 +5,10 @@ import os
 from datetime import date
 
 '''
-	main.py
-		* Setup Simulations defined by "config.json"
-		* Start Simulations 
-		* Store Results 
+    main.py
+        * Setup Simulations defined by "config.json"
+        * Start Simulations
+        * Store Results
 
 '''
 
@@ -91,7 +91,7 @@ class ElasticPowerTAC_Simulation:
         # Write runner.sh.
         with open('runner.sh','w+') as f:
             f.write('#!/bin/sh\n')
-            f.write('mvn -Pcli -Dexec.args="--sim --jms-url tcp://localhost:$1 %s"'%maven_params)
+            f.write('mvn -Pcli -Dexec.args="--jms-url tcp://localhost:$1 %s"'%maven_params)
 
 
 
