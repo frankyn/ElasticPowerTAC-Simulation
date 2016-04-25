@@ -82,6 +82,19 @@ class ElasticPowerTAC_Simulation:
     # Generate runner.sh
     # Create runner.sh with specified configuration params for maven
     def generate_runner(self,simulation):
+        if 'maven-params' in simulation:
+            self._backward_compat_runner(simulation)
+
+        elif 'shell' in simulation:
+            with open('runner.sh', 'w+') as f:
+                f.write('#!/bin/sh\n')
+                for key,value in simulation['shell']:
+                    f.write(value+'\n')
+
+
+
+
+    def _backward_compat_runner(self, simulation):
         # Build additional parameters for maven script
         maven_params = ''
         # Process key value pairs
