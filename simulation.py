@@ -88,7 +88,7 @@ class ElasticPowerTAC_Simulation:
         elif 'shell' in simulation:
             with open('runner.sh', 'w+') as f:
                 f.write('#!/bin/sh\n')
-                for key,value in simulation['shell']:
+                for key,value in simulation['shell'].iteritems():
                     f.write(value+'\n')
 
 
